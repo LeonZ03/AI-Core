@@ -59,3 +59,7 @@
 	path = fpga-AME
 	url = https://github.com/LeonZ03/AME.git
 	branch = fpga-AME
+[submodule "vector-core"]
+	path = vector-core
+	url = https://github.com/OpenXiangShan/YunSuan.git
+	branch = vector-core
