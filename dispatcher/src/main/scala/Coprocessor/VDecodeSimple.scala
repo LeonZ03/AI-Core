@@ -1,0 +1,126 @@
+package Corprocessor
+
+import chisel3._
+import chisel3.util._
+import chisel3.util.experimental.decode._
+
+object VInsts0 {
+  def ARITH_CONFIG        = BitPat("b?????????????????????????1010111")
+  def LOAD0               = BitPat("b?????????????????000?????0000111")
+  def LOAD1               = BitPat("b?????????????????101?????0000111")
+  def LOAD2               = BitPat("b?????????????????110?????0000111")
+  def LOAD3               = BitPat("b?????????????????111?????0000111")
+  def STORE0              = BitPat("b?????????????????000?????0100111")
+  def STORE1              = BitPat("b?????????????????101?????0100111")
+  def STORE2              = BitPat("b?????????????????110?????0100111")
+  def STORE3              = BitPat("b?????????????????111?????0100111")
+}
+import VInsts0._
+
+object VDecodeTable0 {
+                       //       isVec
+                       //         |
+  val default =          BitPat("b0")
+  val table = Seq(
+    ARITH_CONFIG      -> BitPat("b1"),
+    LOAD0             -> BitPat("b1"),
+    LOAD1             -> BitPat("b1"),
+    LOAD2             -> BitPat("b1"),
+    LOAD3             -> BitPat("b1"),
+    STORE0            -> BitPat("b1"),
+    STORE1            -> BitPat("b1"),
+    STORE2            -> BitPat("b1"),
+    STORE3            -> BitPat("b1"),
+  )
+}
+
+object VInsts1 {
+  // Vector Arithmetic instructions
+  def ARITH_XRS1         = BitPat("b?????????????????1?0?????1010111")
+  def ARITH_FRS1         = BitPat("b?????????????????101?????1010111")
+  // Vector Config instructions
+  def VSETVLI            = BitPat("b0????????????????111?????1010111")
+  def VSETIVLI           = BitPat("b11???????????????111?????1010111")
+  def VSETVL             = BitPat("b1000000??????????111?????1010111")
+  // Vector Load
+  def LOAD_UNIT          = BitPat("b????00???????????????????0000111")
+  def LOAD_STRIDED       = BitPat("b????10???????????????????0000111")
+  def LOAD_INDEXED       = BitPat("b?????1???????????????????0000111")
+  // Vector Store
+  def STORE_UNIT         = BitPat("b????00???????????????????0100111")
+  def STORE_STRIDED      = BitPat("b????10???????????????????0100111")
+  def STORE_INDEXED      = BitPat("b?????1???????????????????0100111")
+}
+import VInsts1._
+
+object VDecodeTable1 {
+                       //           xrs2  isConfig
+                       //       xrs1 | frs1 |
+                       //         |  |  |   |
+  val default =          BitPat("b0  0  0   0")
+  val table = Seq(
+    ARITH_XRS1        -> BitPat("b1  0  0   0"),
+    ARITH_FRS1        -> BitPat("b0  0  1   0"),
+    VSETVLI           -> BitPat("b1  0  0   1"),
+    VSETIVLI          -> BitPat("b0  0  0   1"),
+    VSETVL            -> BitPat("b1  1  0   1"),
+    LOAD_UNIT         -> BitPat("b1  0  0   0"),
+    LOAD_STRIDED      -> BitPat("b1  1  0   0"),
+    LOAD_INDEXED      -> BitPat("b1  0  0   0"),
+    STORE_UNIT        -> BitPat("b1  0  0   0"),
+    STORE_STRIDED     -> BitPat("b1  1  0   0"),
+    STORE_INDEXED     -> BitPat("b1  0  0   0"),
+  )
+}
+
+object VInsts2 {  // Write rd
+  def VCPOP_M            = BitPat("b010000??????10000010?????1010111")
+  def VFIRST_M           = BitPat("b010000??????10001010?????1010111")
+  def VMV_X_S            = BitPat("b0100001?????00000010?????1010111")
+  def VFMV_F_S           = BitPat("b0100001?????00000001?????1010111")
+}
+import VInsts2._
+
+object VDecodeTable2 {
+                       //           frd
+                       //        xrd |
+                       //         |  |
+  val default =          BitPat("b0  0")
+  val table = Seq(
+    // Vector Load/Store instructions
+    VCPOP_M           -> BitPat("b1  0"),
+    VFIRST_M          -> BitPat("b1  0"),
+    VMV_X_S           -> BitPat("b1  0"),
+    VFMV_F_S          -> BitPat("b0  1"),
+  )
+}
+
+class VDecodeSimple extends Module {
+  val io = IO(new Bundle {
+    val in = Input(UInt(32.W))
+
+    val isVec = Output(Bool())
+    val isConfig = Output(Bool())
+    val xrs1 = Output(Bool())
+    val xrs2 = Output(Bool())
+    val frs1 = Output(Bool())
+    val xrd = Output(Bool())
+    val frd = Output(Bool())
+  })
+
+  val truthTable0 = TruthTable(VDecodeTable0.table, VDecodeTable0.default)
+  val decoderOut0 = decoder(QMCMinimizer, io.in, truthTable0)
+  io.isVec := decoderOut0(0)
+  
+  val truthTable1 = TruthTable(VDecodeTable1.table, VDecodeTable1.default)
+  val decoderOut1 = decoder(QMCMinimizer, io.in, truthTable1)
+  io.xrs1 := decoderOut1(3) && io.isVec
+  io.xrs2 := decoderOut1(2) && io.isVec
+  io.frs1 := decoderOut1(1)
+  io.isConfig := decoderOut1(0)
+
+  val truthTable2 = TruthTable(VDecodeTable2.table, VDecodeTable2.default)
+  val decoderOut2 = decoder(QMCMinimizer, io.in, truthTable2)
+  io.xrd := decoderOut2(1) || io.isConfig
+  io.frd := decoderOut2(0)
+}

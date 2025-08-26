@@ -110,28 +110,44 @@ module ariane import ariane_pkg::*; #(
 
   if (CVA6Cfg.CvxifEn) begin: gen_cvxif
     if (CVA6Cfg.CoproType == config_pkg::COPRO_EXAMPLE) begin: gen_COPRO_EXAMPLE
-      cvxif_example_coprocessor #(
-        .NrRgprPorts (CVA6Cfg.NrRgprPorts),
-        .XLEN (CVA6Cfg.XLEN),
-        .readregflags_t (readregflags_t),
-        .writeregflags_t (writeregflags_t),
-        .id_t (id_t),
-        .hartid_t (hartid_t),
-        .x_compressed_req_t (x_compressed_req_t),
-        .x_compressed_resp_t (x_compressed_resp_t),
-        .x_issue_req_t (x_issue_req_t),
-        .x_issue_resp_t (x_issue_resp_t),
-        .x_register_t (x_register_t),
-        .x_commit_t (x_commit_t),
-        .x_result_t (x_result_t),
-        .cvxif_req_t (cvxif_req_t),
-        .cvxif_resp_t (cvxif_resp_t)
-      ) i_cvxif_coprocessor (
-        .clk_i                ( clk_i                          ),
-        .rst_ni               ( rst_ni                         ),
-        .cvxif_req_i          ( cvxif_req                      ),
-        .cvxif_resp_o         ( cvxif_resp                     )
+      cvxif_example_coprocessor i_cvxif_coprocessor (  // @[src/main/scala/Cvxif/Cvxif.scala:106:7]
+        .clock                           (clk_i ),  // @[src/main/scala/Cvxif/Cvxif.scala:106:7]
+        .reset                           (!rst_ni),  // @[src/main/scala/Cvxif/Cvxif.scala:106:7]
+        .io_req_compressed_valid         (cvxif_req.compressed_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_compressed_req_instr     (cvxif_req.compressed_req.instr),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_compressed_req_hartid    (cvxif_req.compressed_req.hartid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_issue_valid              (cvxif_req.issue_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_issue_req_instr          (cvxif_req.issue_req.instr),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_issue_req_hartid         (cvxif_req.issue_req.hartid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_issue_req_id             (cvxif_req.issue_req.id),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_valid           (cvxif_req.register_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_hartid          (cvxif_req.register.hartid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_id              (cvxif_req.register.id),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_rs_0            (cvxif_req.register.rs[0]),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_rs_1            (cvxif_req.register.rs[1]),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_register_rs_valid        (cvxif_req.register.rs_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_commit_valid             (cvxif_req.commit_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_commit_hartid            (cvxif_req.commit.hartid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_commit_id                (cvxif_req.commit.id),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_commit_commit_kill       (cvxif_req.commit.commit_kill),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_req_result_ready             (cvxif_req.result_ready),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_compressed_ready        (cvxif_resp.compressed_ready),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_compressed_resp_instr   (cvxif_resp.compressed_resp.instr),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_compressed_resp_accept  (cvxif_resp.compressed_resp.accept),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_issue_ready             (cvxif_resp.issue_ready),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_issue_resp_accept       (cvxif_resp.issue_resp.accept),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_issue_resp_writeback    (cvxif_resp.issue_resp.writeback),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_issue_resp_register_read(cvxif_resp.issue_resp.register_read),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_register_ready          (cvxif_resp.register_ready),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_valid            (cvxif_resp.result_valid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_hartid           (cvxif_resp.result.hartid),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_id               (cvxif_resp.result.id),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_data             (cvxif_resp.result.data),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_rd               (cvxif_resp.result.rd),  // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
+        .io_resp_result_we               (cvxif_resp.result.we)   // @[src/main/scala/Cvxif/Cvxif.scala:107:14]
       );
+
+
     end else begin: gen_COPRO_NONE
       assign cvxif_resp = '{compressed_ready: 1'b1, issue_ready: 1'b1, register_ready: 1'b1, default: '0};
     end
